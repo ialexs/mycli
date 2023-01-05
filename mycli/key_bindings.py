@@ -1,6 +1,6 @@
 import logging
 from prompt_toolkit.enums import EditingMode
-from prompt_toolkit.filters import completion_is_selected, emacs_mode, vi_mode
+from prompt_toolkit.filters import completion_is_selected, emacs_mode, vi_navigation_mode
 from prompt_toolkit.key_binding import KeyBindings
 
 _logger = logging.getLogger(__name__)
@@ -61,7 +61,7 @@ def mycli_bindings(mycli):
         else:
             b.start_completion(select_first=False)
 
-    @kb.add('>', filter=vi_mode)
+    @kb.add('>', filter=vi_navigation_mode)
     @kb.add('c-x', 'p', filter=emacs_mode)
     def _(event):
         """
@@ -72,7 +72,7 @@ def mycli_bindings(mycli):
         _logger.debug('Detected <C-x p>/> key.')
 
         b = event.app.current_buffer
-        cursorpos_relative = b.cursor_position / max(1, len(b.text))
+        cursorpos_relative = b.cursor_position / len(b.text)
         pretty_text = mycli.handle_prettify_binding(b.text)
         if len(pretty_text) > 0:
             b.text = pretty_text
@@ -82,7 +82,8 @@ def mycli_bindings(mycli):
                 cursorpos_abs -= 1
             b.cursor_position = min(cursorpos_abs, len(b.text))
 
-    @kb.add('<', filter=vi_mode)
+    # @kb.add('<', filter=vi_mode)
+    @kb.add('<', filter=vi_navigation_mode)
     @kb.add('c-x', 'u', filter=emacs_mode)
     def _(event):
         """
@@ -93,7 +94,7 @@ def mycli_bindings(mycli):
         _logger.debug('Detected <C-x u>/< key.')
 
         b = event.app.current_buffer
-        cursorpos_relative = b.cursor_position / max(1, len(b.text))
+        cursorpos_relative = b.cursor_position / len(b.text)
         unpretty_text = mycli.handle_unprettify_binding(b.text)
         if len(unpretty_text) > 0:
             b.text = unpretty_text
